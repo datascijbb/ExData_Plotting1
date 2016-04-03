@@ -1,10 +1,20 @@
 getPowerData <- function(){
   ## function to read in the electric power consumption by household data
   ## resultant data frame subset on dates in range 01-02-2007 - 02-02-2007
-  power_df <- read.table(file="./household_power_consumption.txt",header=TRUE, sep=";",na.strings = "?", stringsAsFactors=FALSE)
+  ## download zip file from course website and extract text file
+  temp <- tempfile()
+  download.file("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip",temp)
+  ## read in first few rows to determine colclasses
+  initial_df <- read.table(unz(temp,"household_power_consumption.txt"), 
+                     header=TRUE, sep=";",na.strings = "?", stringsAsFactors=FALSE, nrows=5)
+  classes <- sapply(initial_df, class)
+  ## now read in full dataset
+  power_df <- read.table(unz(temp,"household_power_consumption.txt"), 
+                     header=TRUE, sep=";",na.strings = "?", stringsAsFactors=FALSE,colClasses=classes)
+  unlink(temp)
+  ## subset before doing any other operations
   power_df<-subset(power_df, (Date=="1/2/2007" | Date=="2/2/2007"))
   power_df$DateTime <- strptime(paste(power_df$Date, power_df$Time),"%d/%m/%Y %H:%M:%S")
-  power_df$Global_active_power<-as.numeric(power_df$Global_active_power)
   power_df
 }
 
